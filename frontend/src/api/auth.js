@@ -3,7 +3,7 @@ import api from './client'
 export const authApi = {
   /**
    * Register a new user
-   * @param {Object} data - { username, email, password, password_confirm, first_name, last_name, business_name }
+   * @param {Object} data - { email, password, password_confirm, first_name, last_name, business_name }
    */
   signup(data) {
     return api.post('/auth/signup/', data)
@@ -11,11 +11,11 @@ export const authApi = {
 
   /**
    * Login user
-   * @param {string} username 
+   * @param {string} email 
    * @param {string} password 
    */
-  login(username, password) {
-    return api.post('/auth/login/', { username, password })
+  login(email, password) {
+    return api.post('/auth/login/', { email, password })
   },
 
   /**

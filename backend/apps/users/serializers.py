@@ -24,23 +24,18 @@ class BusinessSerializer(serializers.ModelSerializer):
 
 class SignupSerializer(serializers.Serializer):
     """Serializer for user registration with improved error handling"""
-    username = serializers.CharField(max_length=150)
-    email = serializers.EmailField()
+    email = serializers.EmailField(required=True)
     password = serializers.CharField(write_only=True, min_length=8)
     password_confirm = serializers.CharField(write_only=True, min_length=8)
     first_name = serializers.CharField(max_length=30, required=False, default='')
     last_name = serializers.CharField(max_length=150, required=False, default='')
     business_name = serializers.CharField(max_length=255, required=False, default='')
 
-    def validate_username(self, value):
-        if User.objects.filter(username=value).exists():
-            raise serializers.ValidationError("Username already exists.")
-        return value.lower().strip()
-
     def validate_email(self, value):
+        value = value.lower().strip()
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("Email already registered.")
-        return value.lower().strip()
+        return value
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password_confirm']:
@@ -55,13 +50,20 @@ class SignupSerializer(serializers.Serializer):
         return attrs
 
     def create(self, validated_data):
-        # Remove password_confirm and business_name from validated data
         validated_data.pop('password_confirm', None)
         business_name = validated_data.pop('business_name', None)
         
+        # Generate username from email (part before @)
+        base_username = validated_data['email'].split('@')[0].lower()
+        username = base_username
+        counter = 1
+        while User.objects.filter(username=username).exists():
+            username = f"{base_username}{counter}"
+            counter += 1
+        
         # Create user
         user = User.objects.create_user(
-            username=validated_data['username'],
+            username=username,
             email=validated_data['email'],
             password=validated_data['password'],
             first_name=validated_data.get('first_name', ''),
@@ -85,17 +87,23 @@ class SignupSerializer(serializers.Serializer):
 
 class LoginSerializer(serializers.Serializer):
     """Serializer for user login with improved error handling"""
-    username = serializers.CharField(required=True)
+    email = serializers.EmailField(required=True)
     password = serializers.CharField(write_only=True, required=True)
 
     def validate(self, attrs):
-        username = attrs.get('username', '').lower().strip()
+        email = attrs.get('email', '').lower().strip()
         password = attrs.get('password', '')
         
-        if not username or not password:
-            raise serializers.ValidationError("Username and password are required.")
+        if not email or not password:
+            raise serializers.ValidationError("Email and password are required.")
         
-        attrs['username'] = username
+        # Find user by email
+        try:
+            user = User.objects.get(email=email)
+            attrs['user'] = user
+        except User.DoesNotExist:
+            pass
+        
         return attrs
 
 

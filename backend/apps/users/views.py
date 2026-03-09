@@ -105,32 +105,33 @@ class LoginView(APIView):
                 'errors': serializer.errors
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        username = serializer.validated_data['username']
+        user = serializer.validated_data.get('user')
+        email = serializer.validated_data['email']
         password = serializer.validated_data['password']
         
-        # Try to authenticate
-        user = authenticate(username=username, password=password)
-        
+        # Try to authenticate with email
         if user is None:
             # Check if user exists
-            if not User.objects.filter(username=username).exists():
-                logger.warning(f"Login failed - user not found: {username}")
+            if not User.objects.filter(email=email).exists():
+                logger.warning(f"Login failed - user not found: {email}")
                 return Response({
                     'success': False,
-                    'message': 'Invalid username or password.',
+                    'message': 'Invalid email or password.',
                     'errors': {}
                 }, status=status.HTTP_401_UNAUTHORIZED)
-            
-            logger.warning(f"Login failed - wrong password: {username}")
+        
+        # Verify password
+        if not user.check_password(password):
+            logger.warning(f"Login failed - wrong password: {email}")
             return Response({
                 'success': False,
-                'message': 'Invalid username or password.',
+                'message': 'Invalid email or password.',
                 'errors': {}
             }, status=status.HTTP_401_UNAUTHORIZED)
         
         # Check if user is active
         if not user.is_active:
-            logger.warning(f"Login failed - inactive user: {username}")
+            logger.warning(f"Login failed - inactive user: {email}")
             return Response({
                 'success': False,
                 'message': 'Your account has been deactivated. Please contact support.',
@@ -141,7 +142,7 @@ class LoginView(APIView):
         try:
             business = user.business
         except Business.DoesNotExist:
-            logger.warning(f"Login failed - no business found: {username}")
+            logger.warning(f"Login failed - no business found: {email}")
             # Create business if it doesn't exist
             business = Business.objects.create(
                 owner=user,
@@ -152,7 +153,7 @@ class LoginView(APIView):
         # Generate tokens
         refresh = RefreshToken.for_user(user)
         
-        logger.info(f"Login successful: {username}")
+        logger.info(f"Login successful: {email}")
         
         return Response({
             'success': True,
