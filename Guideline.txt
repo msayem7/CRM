@@ -1,0 +1,532 @@
+SMALL / LIGHTWEIGHT SOFTWARE GUIDELINE
+(With Robust Error Handling & Logging)
+PURPOSE
+
+This guideline is designed for:
+
+MVP products
+
+Admin panels
+
+Internal tools
+
+Prototypes
+
+The goal is:
+
+Speed + Clarity + Safe Error Handling
+
+We avoid over-engineering while still ensuring the system behaves professionally in production.
+
+The system must gracefully handle all possible failures, whether they originate from:
+
+Business rules
+
+System failures
+
+Network issues
+
+User input errors
+
+Third-party service failures
+
+Users must always receive clear, friendly messages, while developers receive detailed logs for debugging.
+
+TECH STACK
+
+Backend
+Django + Django REST Framework
+
+Frontend
+Vue 3 + Pinia
+
+Authentication
+Simple JWT or Django Session
+
+Testing
+Minimal but meaningful
+
+BACKEND GUIDELINE
+PROJECT STRUCTURE
+
+Keep structure simple and flat.
+
+app/
+  models.py
+  serializers.py
+  views.py
+  services.py
+  urls.py
+
+Optional:
+
+core/
+  exceptions.py
+  logging.py
+
+Reason:
+Small projects should remain easy to navigate.
+
+MODELS
+
+Rules:
+
+Keep fields minimal
+
+Avoid premature abstractions
+
+Add relationships only when required
+
+Include timestamps when useful
+
+Example:
+
+created_at
+updated_at
+
+Reason:
+
+These fields help later when debugging production issues.
+
+SERIALIZERS
+
+Use:
+
+ModelSerializer
+
+Validation rules:
+
+Validate required fields
+
+Validate unique constraints
+
+Validate business rules when necessary
+
+Example error message:
+
+Bad:
+
+unique constraint failed
+
+Good:
+
+"This email is already registered."
+
+Reason:
+
+Errors should be understandable by non-technical users.
+
+VIEWS
+
+Use:
+
+APIView
+
+Rules:
+
+Keep functions small
+
+Move business logic to services.py
+
+Catch predictable exceptions
+
+Standard HTTP responses:
+
+Situation	Code
+Validation error	400
+Unauthorized	401
+Forbidden	403
+Not found	404
+Conflict	409
+Server error	500
+
+Reason:
+
+Correct status codes allow the frontend to respond correctly.
+
+ERROR TYPES
+
+All errors should belong to one of these categories.
+
+1. Validation Errors
+
+User input problems.
+
+Example:
+
+Missing fields
+
+Wrong format
+
+Invalid values
+
+User message example:
+
+"Some information is missing. Please check and try again."
+
+2. Business Logic Errors
+
+Business rules violated.
+
+Examples:
+
+Order already completed
+
+Insufficient balance
+
+Duplicate submission
+
+User message example:
+
+"This order has already been processed."
+
+3. System Errors
+
+Internal problems.
+
+Examples:
+
+Database failure
+
+File system error
+
+Timeout
+
+External API failure
+
+User message example:
+
+"We couldn’t process your request right now. Please try again later."
+
+4. Network Errors
+
+Connectivity issues.
+
+Examples:
+
+Backend unreachable
+
+Timeout
+
+Connection refused
+
+User message example:
+
+"The server is not reachable. Please check your connection."
+
+STANDARD API RESPONSE FORMAT
+
+All responses must follow a consistent structure.
+
+Success
+{
+  "success": true,
+  "message": "Operation successful",
+  "data": {},
+  "request_id": "abc123"
+}
+Error
+{
+  "success": false,
+  "message": "Something went wrong",
+  "error_code": "ORDER_ALREADY_COMPLETED",
+  "errors": {},
+  "request_id": "abc123"
+}
+
+Reason:
+
+Easy for frontend to parse
+
+Easy to track with logs
+
+GLOBAL EXCEPTION HANDLER
+
+Use a DRF custom exception handler.
+
+Responsibilities:
+
+Convert exceptions to standard response
+
+Hide internal stack traces
+
+Log full error details
+
+Return friendly messages
+
+Example mapping:
+
+Exception	Response
+ValidationError	400
+PermissionDenied	403
+NotFound	404
+DatabaseError	500
+Unhandled Exception	500
+
+Users never see stack traces.
+
+BACKEND LOGGING
+
+Logging is mandatory in production.
+
+Log important events such as:
+
+Authentication failures
+
+Failed payments
+
+API timeouts
+
+Unexpected exceptions
+
+Background job failures
+
+Log levels:
+
+Level	Usage
+INFO	Normal operations
+WARNING	Suspicious events
+ERROR	Operation failure
+CRITICAL	System crash
+
+Example log:
+
+ERROR: Order creation failed
+user_id=23
+request_id=abc123
+reason=database timeout
+
+Never log:
+
+Passwords
+
+Tokens
+
+Card numbers
+
+Personal private data
+
+Reason:
+
+Logs must not expose sensitive data.
+
+FRONTEND GUIDELINE
+PROJECT STRUCTURE
+src/
+  api/
+  stores/
+  views/
+  components/
+  utils/
+
+Keep structure predictable.
+
+API LAYER
+
+Create one axios instance.
+
+Responsibilities:
+
+Attach auth tokens
+
+Handle network errors
+
+Intercept responses
+
+Example error handling:
+
+Error	User Message
+Network error	"Server not reachable"
+401	"Your session expired. Please login again."
+403	"You don’t have permission."
+500	"Something went wrong. Please try again later."
+
+Reason:
+
+Centralized error translation.
+
+PINIA STORES
+
+Each store should manage:
+
+data
+
+loading
+
+error
+
+Example:
+
+state: {
+  list: [],
+  loading: false,
+  error: null
+}
+
+Rules:
+
+Before API call:
+
+error = null
+loading = true
+
+After API call:
+
+loading = false
+
+On failure:
+
+error = friendlyMessage
+
+Never store raw backend exceptions.
+
+USER FRIENDLY ERROR MESSAGES
+
+Users should see clear and human language.
+
+Bad:
+
+Invalid payload
+
+Good:
+
+Some information is missing. Please check the form and try again.
+
+Bad:
+
+401 Unauthorized
+
+Good:
+
+Your session expired. Please login again.
+
+Reason:
+
+Users are not developers.
+
+GLOBAL FRONTEND ERROR HANDLER
+
+Create a central error handler.
+
+Responsibilities:
+
+Catch axios errors
+
+Map HTTP codes
+
+Show toast notifications
+
+Redirect on auth failure
+
+Example mapping:
+
+Code	Message
+400	Please check your input
+401	Login required
+403	Permission denied
+404	Resource not found
+409	Conflict detected
+500	Server error. Try later
+UI ERROR DISPLAY
+
+UI should handle errors clearly.
+
+Examples:
+
+Form validation:
+
+Email already exists
+
+Page error:
+
+We couldn't load the data. Please refresh.
+
+Retry buttons for:
+
+network errors
+
+timeouts
+
+Reason:
+
+Good UX reduces user frustration.
+
+FRONTEND LOGGING
+
+Log important issues.
+
+Development:
+
+console.error()
+
+Production:
+
+Send logs to backend endpoint.
+
+Log:
+
+API failures
+
+UI crashes
+
+unexpected behavior
+
+Never log:
+
+passwords
+
+tokens
+
+private user data
+
+TESTING
+
+Test at least:
+
+Critical APIs
+
+Login
+
+Data creation
+
+Data updates
+
+Main user flows
+
+Login
+
+Create item
+
+Update item
+
+Delete item
+
+Error scenarios
+
+Invalid input
+
+Network failure
+
+Permission errors
+
+Server errors
+
+Reason:
+
+Most bugs appear in error scenarios, not happy paths.
+
+FINAL GOAL
+
+This guideline ensures:
+
+Fast MVP development
+
+Professional error handling
+
+Friendly user experience
+
+Safe production logging
+
+Maintainable code
+
+The system must fail gracefully, never exposing internal errors to users while still giving developers the information they need.

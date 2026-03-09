@@ -1,0 +1,292 @@
+I want to create a multitanant software here is 
+business requirement specification (BRS) document for a multitenant software solution. 
+Please review and provide feedback.
+
+📊 Business Analysis Document
+Project: MHM Lead Management System (CRM)
+
+1️⃣ Executive Summary
+The current system is Excel-based and tracks:
+Lead ID
+
+
+Client Information
+
+
+Source
+
+
+Project Interest
+
+
+Status
+
+
+Temperature (Hot/Warm/Cold)
+
+
+Follow-up Dates
+
+
+Remarks
+
+
+However, Excel has limitations:
+No automation
+
+
+No reminders
+
+
+No performance analytics
+
+
+No multi-user control
+
+
+No reporting dashboard
+
+
+The goal is to develop a centralized Lead Management CRM system.
+
+2️⃣ Current Business Process Analysis
+Lead Flow Observed from Data
+Lead comes from:
+
+
+Facebook
+
+
+Personal
+
+
+REHAB Fair
+
+
+Others
+
+
+Assigned to a Sales Representative
+
+
+Lead moves through statuses:
+
+
+New
+
+
+Contacted
+
+
+Docs Sent
+
+
+Site Visited
+
+
+Closed Lost
+
+
+(Missing: Closed Won)
+
+
+Follow-up is manually tracked via dates
+
+
+
+3️⃣ Problems Identified
+❌ Operational Problems
+No automatic follow-up reminder
+
+
+No lead aging tracking
+
+
+No conversion ratio tracking
+
+
+No duplicate detection
+
+
+Manual status update
+
+
+No centralized access
+
+
+❌ Business Visibility Problems
+Cannot see:
+
+
+Conversion rate
+
+
+Best performing source
+
+
+Best performing rep
+
+
+Monthly sales trend
+
+
+Pipeline value
+
+
+
+🏗 Proposed Software Requirements
+
+4️⃣ Functional Requirements
+4.1 Lead Management
+Auto-generate Lead ID
+
+
+Capture:
+
+
+Name
+
+
+Phone
+
+
+Occupation
+
+
+Area
+
+
+Interested Project
+
+
+Source
+
+
+Assign to Sales Rep
+
+
+Lead Status dropdown
+
+
+Temperature Auto Classification
+
+
+
+4.2 Sales Pipeline Stages
+Recommended pipeline:
+New
+
+
+Contacted
+
+
+Interested
+
+
+Site Visit Scheduled
+
+
+Site Visited
+
+
+Negotiation
+
+
+Docs Sent
+
+
+Booking Money Received
+
+
+Closed Won
+
+
+Closed Lost
+
+
+
+4.3 Follow-Up Automation
+Reminder notification
+
+
+Email/SMS reminder
+
+
+Overdue leads highlight (Red)
+
+
+Auto escalation if no action taken
+
+
+
+4.4 Dashboard & Analytics
+📈 KPI Dashboard:
+Total Leads
+
+
+Hot Leads Count
+
+
+Conversion Rate
+
+
+Leads by Source
+
+
+Leads by Project
+
+
+Sales by Rep
+
+
+Monthly Sales Trend
+
+
+Lost Reason Analysis
+
+
+
+4.5 User Management
+Admin
+
+
+Sales Manager
+
+
+Sales Executive
+
+
+Role-based permissions.
+
+4.6 Reporting Module
+Daily Follow-up Report
+
+
+Monthly Performance Report
+
+
+Source Conversion Report
+
+
+Project-wise Interest Report
+
+
+Export:
+PDF
+
+
+Excel
+
+
+
+5️⃣ Non-Functional Requirements
+Web-based system
+Mobile responsive
+Cloud-hosted
+Secure login
+Database backup
+Multi-user access
+Fast loading
+
+
+
