@@ -1,109 +1,126 @@
 <template>
-  <div class="signup-page">
-    <div class="signup-background">
-      <div class="bg-shape bg-shape-1"></div>
-      <div class="bg-shape bg-shape-2"></div>
-      <div class="bg-shape bg-shape-3"></div>
-    </div>
-    
-    <div class="signup-container">
-      <div class="signup-card">
-        <div class="signup-header">
-          <h1>Create Account</h1>
-          <p class="subtitle">Start managing your business</p>
+  <div class="min-vh-100 d-flex align-items-center justify-content-center bg-light py-5 w-100">
+    <div class="container-fluid px-4">
+      <div class="row justify-content-center w-100 m-0">
+        <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5 col-xxl-4">
+          <div class="card shadow-lg border-0 rounded-lg">
+            <div class="card-header bg-primary text-white text-center py-4">
+              <h3 class="font-weight-light my-2">Create Account</h3>
+              <p class="mb-0">Start managing your business</p>
+            </div>
+            <div class="card-body p-5">
+              <form @submit.prevent="handleSignup">
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <div class="form-floating mb-3 mb-md-0">
+                      <input 
+                        v-model="form.name" 
+                        type="text" 
+                        class="form-control" 
+                        id="name" 
+                        placeholder="Enter your full name"
+                        :disabled="loading"
+                      />
+                      <label for="name">Full Name</label>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-floating">
+                      <input 
+                        v-model="form.business_name" 
+                        type="text" 
+                        class="form-control" 
+                        id="business_name" 
+                        placeholder="Your company name"
+                        :disabled="loading"
+                      />
+                      <label for="business_name">Business Name</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-floating mb-3">
+                  <input 
+                    v-model="form.email" 
+                    type="email" 
+                    class="form-control" 
+                    id="email" 
+                    placeholder="name@example.com"
+                    required 
+                    :disabled="loading"
+                  />
+                  <label for="email">Email address *</label>
+                </div>
+
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <div class="form-floating mb-3 mb-md-0 position-relative">
+                      <input 
+                        v-model="form.password" 
+                        :type="showPassword ? 'text' : 'password'" 
+                        class="form-control" 
+                        id="password" 
+                        placeholder="Create a password"
+                        required 
+                        :disabled="loading"
+                      />
+                      <label for="password">Password *</label>
+                      <button 
+                        type="button" 
+                        class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-decoration-none text-secondary"
+                        @click="showPassword = !showPassword"
+                        style="z-index: 5;"
+                      >
+                        <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-floating mb-3 mb-md-0 position-relative">
+                      <input 
+                        v-model="form.password_confirm" 
+                        :type="showPasswordConfirm ? 'text' : 'password'" 
+                        class="form-control" 
+                        id="password_confirm" 
+                        placeholder="Confirm password"
+                        required 
+                        :disabled="loading"
+                      />
+                      <label for="password_confirm">Confirm Password *</label>
+                      <button 
+                        type="button" 
+                        class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-decoration-none text-secondary"
+                        @click="showPasswordConfirm = !showPasswordConfirm"
+                        style="z-index: 5;"
+                      >
+                        <i :class="showPasswordConfirm ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div v-if="error" class="alert alert-danger py-2" role="alert">
+                  {{ formatError(error) }}
+                </div>
+
+                <div class="mt-4 mb-0">
+                  <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg" :disabled="loading">
+                      <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      {{ loading ? 'Creating account...' : 'Create Account' }}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="card-footer text-center py-3 bg-light">
+              <div class="small">
+                Already have an account? 
+                <router-link to="/login" class="text-primary text-decoration-none">Sign in</router-link>
+              </div>
+            </div>
+          </div>
         </div>
-        
-        <form @submit.prevent="handleSignup">
-          <div class="form-group">
-            <label for="name">Name</label>
-            <input 
-              v-model="form.name" 
-              type="text" 
-              id="name" 
-              placeholder="Enter your full name"
-              :disabled="loading"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="email">Email *</label>
-            <input 
-              v-model="form.email" 
-              type="email" 
-              id="email" 
-              placeholder="Enter your email"
-              required 
-              :disabled="loading"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="business_name">Business Name</label>
-            <input 
-              v-model="form.business_name" 
-              type="text" 
-              id="business_name" 
-              placeholder="Your company name"
-              :disabled="loading"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="password">Password *</label>
-            <div class="password-field">
-              <input 
-                v-model="form.password" 
-                :type="showPassword ? 'text' : 'password'" 
-                id="password" 
-                placeholder="Create a password (min 8 characters)"
-                required 
-                :disabled="loading"
-              />
-              <button 
-                type="button" 
-                class="toggle-password"
-                @click="showPassword = !showPassword"
-              >
-                {{ showPassword ? '👁️' : '👁️‍🗨️' }}
-              </button>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="password_confirm">Confirm Password *</label>
-            <div class="password-field">
-              <input 
-                v-model="form.password_confirm" 
-                :type="showPasswordConfirm ? 'text' : 'password'" 
-                id="password_confirm" 
-                placeholder="Confirm your password"
-                required 
-                :disabled="loading"
-              />
-              <button 
-                type="button" 
-                class="toggle-password"
-                @click="showPasswordConfirm = !showPasswordConfirm"
-              >
-                {{ showPasswordConfirm ? '👁️' : '👁️‍🗨️' }}
-              </button>
-            </div>
-          </div>
-
-          <div v-if="error" class="error-message">
-            {{ formatError(error) }}
-          </div>
-
-          <button type="submit" class="btn-primary" :disabled="loading">
-            <span v-if="loading" class="spinner"></span>
-            {{ loading ? 'Creating account...' : 'Create Account' }}
-          </button>
-
-          <p class="login-link">
-            Already have an account? 
-            <router-link to="/login">Sign in</router-link>
-          </p>
-        </form>
       </div>
     </div>
   </div>
@@ -194,277 +211,5 @@ const handleSignup = async () => {
 </script>
 
 <style scoped>
-.signup-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  position: relative;
-  overflow: hidden;
-  padding: 40px 20px;
-}
-
-.signup-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: hidden;
-}
-
-.bg-shape {
-  position: absolute;
-  border-radius: 50%;
-  opacity: 0.1;
-  background: white;
-}
-
-.bg-shape-1 {
-  width: 600px;
-  height: 600px;
-  top: -200px;
-  right: -200px;
-  animation: float 20s ease-in-out infinite;
-}
-
-.bg-shape-2 {
-  width: 400px;
-  height: 400px;
-  bottom: -100px;
-  left: -100px;
-  animation: float 15s ease-in-out infinite reverse;
-}
-
-.bg-shape-3 {
-  width: 300px;
-  height: 300px;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  animation: pulse 10s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-30px) rotate(10deg);
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 0.1;
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.2);
-    opacity: 0.05;
-  }
-}
-
-.signup-container {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 440px;
-}
-
-.signup-card {
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  padding: 40px 36px;
-}
-
-.signup-header {
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.signup-header h1 {
-  margin: 0 0 8px 0;
-  color: #1a1a1a;
-  font-size: 32px;
-  font-weight: 700;
-}
-
-.subtitle {
-  color: #666;
-  margin: 0;
-  font-size: 16px;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 10px;
-  font-weight: 600;
-  color: #333;
-  font-size: 14px;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 14px 18px;
-  border: 2px solid #e5e7eb;
-  border-radius: 10px;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  box-sizing: border-box;
-  background: #fafafa;
-}
-
-.form-group input:focus {
-  outline: none;
-  border-color: #667eea;
-  background: white;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-}
-
-.form-group input:disabled {
-  background-color: #f5f5f5;
-  cursor: not-allowed;
-}
-
-.form-group input::placeholder {
-  color: #9ca3af;
-}
-
-.password-field {
-  position: relative;
-}
-
-.password-field input {
-  padding-right: 50px;
-}
-
-.toggle-password {
-  position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 18px;
-  padding: 4px;
-  opacity: 0.6;
-  transition: opacity 0.2s;
-}
-
-.toggle-password:hover {
-  opacity: 1;
-}
-
-.btn-primary {
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-}
-
-.btn-primary:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.btn-primary:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.error-message {
-  background-color: #fef2f2;
-  color: #dc2626;
-  padding: 14px 18px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-  font-size: 14px;
-  text-align: center;
-  border: 1px solid #fecaca;
-}
-
-.login-link {
-  text-align: center;
-  margin-top: 28px;
-  color: #666;
-  font-size: 15px;
-}
-
-.login-link a {
-  color: #667eea;
-  font-weight: 600;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.login-link a:hover {
-  color: #764ba2;
-  text-decoration: underline;
-}
-
-.spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Responsive Design */
-@media (max-width: 480px) {
-  .signup-card {
-    padding: 28px 24px;
-    border-radius: 16px;
-  }
-
-  .signup-header h1 {
-    font-size: 26px;
-  }
-
-  .form-group {
-    margin-bottom: 18px;
-  }
-
-  .form-group input {
-    padding: 12px 16px;
-  }
-
-  .btn-primary {
-    padding: 14px;
-  }
-
-  .signup-page {
-    padding: 20px 16px;
-  }
-}
+/* Custom styles can be added here if needed, but mostly relying on Bootstrap */
 </style>
