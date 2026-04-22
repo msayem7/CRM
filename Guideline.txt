@@ -5,15 +5,11 @@ PURPOSE
 This guideline is designed for:
 
 MVP products
-
 Admin panels
-
 Internal tools
-
 Prototypes
 
 The goal is:
-
 Speed + Clarity + Safe Error Handling
 
 We avoid over-engineering while still ensuring the system behaves professionally in production.
@@ -21,13 +17,9 @@ We avoid over-engineering while still ensuring the system behaves professionally
 The system must gracefully handle all possible failures, whether they originate from:
 
 Business rules
-
 System failures
-
 Network issues
-
 User input errors
-
 Third-party service failures
 
 Users must always receive clear, friendly messages, while developers receive detailed logs for debugging.
@@ -375,33 +367,24 @@ After API call:
 loading = false
 
 On failure:
-
 error = friendlyMessage
-
 Never store raw backend exceptions.
-
 USER FRIENDLY ERROR MESSAGES
-
 Users should see clear and human language.
 
 Bad:
-
 Invalid payload
 
 Good:
-
 Some information is missing. Please check the form and try again.
 
 Bad:
-
 401 Unauthorized
 
 Good:
-
 Your session expired. Please login again.
 
 Reason:
-
 Users are not developers.
 
 GLOBAL FRONTEND ERROR HANDLER
@@ -434,21 +417,16 @@ UI should handle errors clearly.
 Examples:
 
 Form validation:
-
 Email already exists
 
 Page error:
-
 We couldn't load the data. Please refresh.
 
 Retry buttons for:
-
 network errors
-
 timeouts
 
 Reason:
-
 Good UX reduces user frustration.
 
 FRONTEND LOGGING
@@ -456,59 +434,39 @@ FRONTEND LOGGING
 Log important issues.
 
 Development:
-
 console.error()
 
 Production:
-
 Send logs to backend endpoint.
 
 Log:
-
 API failures
-
 UI crashes
-
 unexpected behavior
 
 Never log:
-
 passwords
-
 tokens
-
 private user data
 
 TESTING
 
 Test at least:
-
 Critical APIs
-
 Login
-
 Data creation
-
 Data updates
-
 Main user flows
-
 Login
-
 Create item
-
 Update item
-
 Delete item
 
 Error scenarios
 
 Invalid input
-
 Network failure
-
 Permission errors
-
 Server errors
 
 Reason:
@@ -520,7 +478,6 @@ FINAL GOAL
 This guideline ensures:
 
 Fast MVP development
-
 Professional error handling
 Friendly user experience
 Safe production logging
