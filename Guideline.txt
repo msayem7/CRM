@@ -100,7 +100,7 @@ Validate required fields
 
 Validate unique constraints
 
-Validate business rules when necessary
+Validate business rules 
 
 Example error message:
 
@@ -522,11 +522,7 @@ This guideline ensures:
 Fast MVP development
 
 Professional error handling
-
 Friendly user experience
-
 Safe production logging
-
 Maintainable code
-
 The system must fail gracefully, never exposing internal errors to users while still giving developers the information they need.

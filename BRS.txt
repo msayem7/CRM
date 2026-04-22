@@ -1,281 +1,312 @@
-I want to create a multitanant software here is 
-business requirement specification (BRS) document for a multitenant software solution. 
+I want to create a multi-tenant software here is 
+business requirement specification (BRS) document for a multi-tenant software solution. 
 Please review and provide feedback.
 
-📊 Business Analysis Document
-Project: MHM Lead Management System (CRM)
+📄 Real Estate CRM System
+Business Summary (Aligned with Referral System)
+________________________________________
+1. 🧠 Overview
+This system is designed for a real estate company to manage the full lifecycle:
+•	Lead generation
+•	Project-based interest tracking
+•	Sales conversion
+•	Unit inventory management
+•	Customer relationship & follow-up
+•	Issue management
+•	Referral tracking and conversion (NEW – key feature)
+________________________________________
+2. 🎯 Core Objectives
+•	Increase lead-to-sale conversion
+•	Track project demand accurately
+•	Prevent unit double-selling
+•	Improve customer satisfaction
+•	Leverage referrals as a growth channel
+________________________________________
+3. 🔁 Business Lifecycle
+Referral → Lead → Project Interest → Follow-ups → Site Visit → Conversion → Customer → Sale → Issue Management
+________________________________________
+4. 🧱 Core Entities
+4.1 Lead
+•	Identified by phone (unique)
+•	Assigned to one sales representative
+•	Tracks interest, follow-ups, and conversion
+________________________________________
+4.2 Project & Unit
+•	Project = real estate development
+•	Unit = individual flat
+•	Unit status controls inventory and sales
+________________________________________
+4.3 Customer
+•	Created after lead conversion
+•	Can purchase multiple units
+________________________________________
+4.4 Referral (Key Addition)
+•	Tracks who referred whom
+•	May exist before lead creation
+•	Later linked automatically to lead
+________________________________________
+4.5 Issue Management
+•	Handles project-level and unit-level problems
+•	Tracks resolution and inspection
+________________________________________
+5. ⚖️ Business Rules
+________________________________________
+🔹 Lead Rules
+•	Phone must be unique
+•	One lead → one agent
+________________________________________
+🔹 Project Interest Rules
+•	One lead can be interested in multiple projects
+•	Stores:
+o	budget
+o	size range
+o	probability
+o	expected booking date
+o	multiple interest levels
+________________________________________
+🔹 Unit Rules
+•	A unit belongs to one project
+•	Cannot be sold twice
+•	Status controls availability
+________________________________________
+🔹 Sale Rules
+•	One unit → one sale
+•	Sale automatically locks unit
+________________________________________
+🔹 Issue Rules
+•	Project required
+•	Unit optional
+•	Customer derived from unit
+________________________________________
+🔹 Referral Rules (Aligned with Your Decision)
+✅ Rule 1: Prevent Duplicate Referral Spam
+•	Same customer cannot refer same phone twice
+________________________________________
+✅ Rule 2: Auto-Link Referral to Lead
+•	When a lead is created:
+o	System checks referral by phone
+o	Automatically links referral → lead
+________________________________________
+✅ Rule 3: Reporting Power
+System must support:
+•	Top referrers
+•	Referral conversion rate
+•	Referral-based sales tracking
+________________________________________
+6. 🗄️ Django Models (Final Aligned Version)
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+
+
+# ----------------------
+# USER
+# ----------------------
+class User(AbstractUser):
+    ROLE_CHOICES = (
+        ('admin', 'Admin'),
+        ('manager', 'Manager'),
+        ('sales_rep', 'Sales Representative'),
+    )
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+
+
+# ----------------------
+# LOCATION
+# ----------------------
+class Location(models.Model):
+    name = models.CharField(max_length=255)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+# ----------------------
+# INTEREST LEVEL
+# ----------------------
+class InterestLevel(models.Model):
+    name = models.CharField(max_length=50)
+    points = models.IntegerField()
+    is_active = models.BooleanField(default=True)
+
+
+# ----------------------
+# PROJECT
+# ----------------------
+class Project(models.Model):
+    STATUS_CHOICES = (
+        ('ongoing', 'Ongoing'),
+        ('completed', 'Completed'),
+        ('upcoming', 'Upcoming'),
+    )
+
+    name = models.CharField(max_length=255)
+    location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True)
+    type = models.CharField(max_length=50)
+    total_units = models.IntegerField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+
+
+# ----------------------
+# UNIT
+# ----------------------
+class Unit(models.Model):
+    STATUS_CHOICES = (
+        ('available', 'Available'),
+        ('reserved', 'Reserved'),
+        ('booked', 'Booked'),
+        ('sold', 'Sold'),
+        ('blocked', 'Blocked'),
+    )
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    unit_no = models.CharField(max_length=50)
+    size_sqft = models.FloatField()
+    unit_type = models.CharField(max_length=50)
+    floor = models.IntegerField()
+    facing = models.CharField(max_length=50)
+    base_price = models.DecimalField(max_digits=12, decimal_places=2)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available')
+
+    class Meta:
+        unique_together = ('project', 'unit_no')
+
+
+# ----------------------
+# LEAD
+# ----------------------
+class Lead(models.Model):
+    STATUS_CHOICES = (
+        ('new', 'New'),
+        ('contacted', 'Contacted'),
+        ('site_visit', 'Site Visit'),
+        ('negotiation', 'Negotiation'),
+        ('lost', 'Lost'),
+        ('sold', 'Sold'),
+    )
+
+    name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=20, unique=True, db_index=True)
+    email = models.EmailField(null=True, blank=True)
+
+    location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True)
+    profession = models.CharField(max_length=100, blank=True)
+
+    source = models.CharField(max_length=100)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+
+    remark = models.TextField(blank=True)
+    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+# ----------------------
+# LEAD FOLLOW-UP
+# ----------------------
+class LeadFollowUp(models.Model):
+    FOLLOWUP_TYPE = (
+        ('call', 'Call'),
+        ('meeting', 'Meeting'),
+        ('site_visit', 'Site Visit'),
+    )
+`
+    lead = models.ForeignKey(Lead, on_delete=models.CASCADE)
+    type = models.CharField(max_length=20, choices=FOLLOWUP_TYPE)
+    notes = models.TextField()
+    next_date = models.DateField()
+    status = models.CharField(max_length=20)
+
+
+# ----------------------
+# LEAD PROJECT INTEREST
+# ----------------------
+class LeadProjectInterest(models.Model):
+    lead = models.ForeignKey(Lead, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+
+    budget_range = models.CharField(max_length=100)
+    preferred_size_range = models.CharField(max_length=100)
+
+    probability_percent = models.IntegerField()
+    expected_booking_date = models.DateField(null=True, blank=True)
+
+    interest_levels = models.ManyToManyField(InterestLevel, blank=True)
+
+
+# ----------------------
+# CUSTOMER
+# ----------------------
+class Customer(models.Model):
+    lead = models.OneToOneField(Lead, on_delete=models.SET_NULL, null=True)
+
+    name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=20)
+    address = models.TextField()
+
+
+# ----------------------
+# SALE
+# ----------------------
+class Sale(models.Model):
+    PAYMENT_STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('partial', 'Partial'),
+        ('paid', 'Paid'),
+    )
+
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    unit = models.OneToOneField(Unit, on_delete=models.CASCADE)
+
+    sale_date = models.DateField()
+    price = models.DecimalField(max_digits=12, decimal_places=2)
+
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES)
+
+
+# ----------------------
+# REFERRAL
+# ----------------------
+class Referral(models.Model):
+    referrer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='given_referrals')
+    name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=20, db_index=True)
+
+    lead = models.ForeignKey(Lead, on_delete=models.SET_NULL, null=True, blank=True)
+
+    note = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('referrer', 'phone')
+
+
+# ----------------------
+# PROJECT ISSUE
+# ----------------------
+class ProjectIssue(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, null=True, blank=True)
+
+    issue_date = models.DateField()
+
+    issue_type = models.CharField(max_length=50)
+    description = models.TextField()
+
+    status = models.CharField(max_length=20)
+    priority = models.CharField(max_length=20)
+
+    assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+🚀 Final Insight
+You now have:
+👉 Lead Management System
+👉 Inventory Management System
+👉 Customer Service System
+👉 Referral Growth Engine
+All in one structured architecture.
 
-1️⃣ Executive Summary
-The current system is Excel-based and tracks:
-Lead ID
-
-
-Client Information
-
-
-Source
-
-
-Project Interest
-
-
-Status
-
-
-Temperature (Hot/Warm/Cold)
-
-
-Follow-up Dates
-
-
-Remarks
-
-
-However, Excel has limitations:
-No automation
-
-
-No reminders
-
-
-No performance analytics
-
-
-No multi-user control
-
-
-No reporting dashboard
-
-
-The goal is to develop a centralized Lead Management CRM system.
-
-2️⃣ Current Business Process Analysis
-Lead Flow Observed from Data
-Lead comes from:
-
-
-Facebook
-
-
-Personal
-
-
-REHAB Fair
-
-
-Others
-
-
-Assigned to a Sales Representative
-
-
-Lead moves through statuses:
-
-
-New
-
-
-Contacted
-
-
-Docs Sent
-
-
-Site Visited
-
-
-Closed Lost
-
-
-(Missing: Closed Won)
-
-
-Follow-up is manually tracked via dates
-
-
-
-3️⃣ Problems Identified
-❌ Operational Problems
-No automatic follow-up reminder
-
-
-No lead aging tracking
-
-
-No conversion ratio tracking
-
-
-No duplicate detection
-
-
-Manual status update
-
-
-No centralized access
-
-
-❌ Business Visibility Problems
-Cannot see:
-
-
-Conversion rate
-
-
-Best performing source
-
-
-Best performing rep
-
-
-Monthly sales trend
-
-
-Pipeline value
-
-
-
-🏗 Proposed Software Requirements
-
-4️⃣ Functional Requirements
-4.1 Lead Management
-Auto-generate Lead ID
-
-
-Capture:
-
-
-Name
-
-
-Phone
-
-
-Occupation
-
-
-Area
-
-
-Interested Project
-
-
-Source
-
-
-Assign to Sales Rep
-
-
-Lead Status dropdown
-
-
-Temperature Auto Classification
-
-
-
-4.2 Sales Pipeline Stages
-Recommended pipeline:
-New
-
-
-Contacted
-
-
-Interested
-
-
-Site Visit Scheduled
-
-
-Site Visited
-
-
-Negotiation
-
-
-Docs Sent
-
-
-Booking Money Received
-
-
-Closed Won
-
-
-Closed Lost
-
-
-
-4.3 Follow-Up Automation
-Reminder notification
-
-
-Email/SMS reminder
-
-
-Overdue leads highlight (Red)
-
-
-Auto escalation if no action taken
-
-
-
-4.4 Dashboard & Analytics
-📈 KPI Dashboard:
-Total Leads
-
-
-Hot Leads Count
-
-
-Conversion Rate
-
-
-Leads by Source
-
-
-Leads by Project
-
-
-Sales by Rep
-
-
-Monthly Sales Trend
-
-
-Lost Reason Analysis
-
-
-
-4.5 User Management
-Admin
-
-
-Sales Manager
-
-
-Sales Executive
-
-
-Role-based permissions.
-
-4.6 Reporting Module
-Daily Follow-up Report
-
-
-Monthly Performance Report
-
-
-Source Conversion Report
-
-
-Project-wise Interest Report
-
-
-Export:
-PDF
-
-
-Excel
 
 
 
